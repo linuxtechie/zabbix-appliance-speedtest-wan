@@ -6,6 +6,7 @@ cd /root
 wget https://raw.githubusercontent.com/tbutsch/zabbix-appliance-speedtest-wan/master/speedtest.sh
 wget https://raw.githubusercontent.com/tbutsch/zabbix-appliance-speedtest-wan/master/speedtest.service
 wget https://raw.githubusercontent.com/tbutsch/zabbix-appliance-speedtest-wan/master/speedtest.timer
+wget https://raw.githubusercontent.com/tbutsch/zabbix-appliance-speedtest-wan/master/speedtest.conf
 mkdir /etc/zabbix/script
 chmod 777 /etc/zabbix/script
 cp ./speedtest.sh /etc/zabbix/script/
@@ -17,4 +18,5 @@ service zabbix-agent restart
 rm speedtest.sh
 rm speedtest.service
 rm speedtest.timer
+rm speedtest.conf
 rm installer.sh
