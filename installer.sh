@@ -12,6 +12,7 @@ chmod 777 /etc/zabbix/script
 cp ./speedtest.sh /etc/zabbix/script/
 chmod +x /etc/zabbix/script/speedtest.sh
 cp ./speedtest.conf /etc/zabbix/zabbix_agentd.conf.d/
+cp ./speedtest.conf /etc/zabbix/zabbix_agentd.d/
 cp speedtest.service speedtest.timer /etc/systemd/system
 systemctl enable --now speedtest.timer
 service zabbix-agent restart
