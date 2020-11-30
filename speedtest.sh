@@ -2,8 +2,8 @@
 
 set -e
 
-CACHE_FILE=/etc/zabbix/script/speedtest.log
-LOCK_FILE=/etc/zabbix/script/speedtest.lock
+LOCK_FILE=/tmp/speedtest.lock
+METRIC_FILE=/tmp/zabbix_metrics.txt
 
 run_speedtest() {
 	# Lock
@@ -26,7 +26,6 @@ run_speedtest() {
 		output=$(speedtest --simple)
 	else
 		output=$(speedtest --server "$1" --simple)
-		CACHE_FILE+="_$1"
 	fi
 	
 	#Debug
@@ -38,14 +37,16 @@ run_speedtest() {
 	#download=$(echo "$output" | grep -n 'Download: ' | awk '{ printf("%.2f\n", $1) }')
 	#upload=$(echo "$output" | grep -n 'Upload:' | awk '{ printf("%.2f\n", $1) }')
 
-	#Send value to CACHE_FILE
-	{
-		echo "$output"
-		
-	} > "$CACHE_FILE"
-	
-	CACHE_FILE=/etc/zabbix/script/speedtest.log
+	upload=$(echo "$output" | awk '/Upload/ { print $2 }')
+	download=$(echo "$output" | awk '/Download/ { print $2 }')
+	ping=$(echo "$output" | awk '/Ping/ { print $2 }')
+	zbx_hostname=$(cat /etc/zabbix/zabbix_agentd.conf | awk -F "=" '/^Hostname=/ { print $2 }')
+	echo "$zbx_hostname speedtest.upload $upload" > $METRIC_FILE
+	echo "$zbx_hostname speedtest.download $download" >> $METRIC_FILE
+	echo "$zbx_hostname speedtest.ping $download" >> $METRIC_FILE
 
+	/usr/bin/zabbix_sender -c /etc/zabbix/zabbix_agentd.conf -i $METRIC_FILE
+	rm -rf $METRIC_FILE
 	# Make sure to remove the lock file (may be redundant)
 	rm -rf "$LOCK_FILE"
 }

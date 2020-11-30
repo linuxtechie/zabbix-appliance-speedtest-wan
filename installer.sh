@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 apt-get update
-apt-get -y install speedtest-cli
+apt-get -y install speedtest-cli zabbix-sender
 speedtest --simple
 cd /root
 wget https://raw.githubusercontent.com/tbutsch/zabbix-appliance-speedtest-wan/master/speedtest.sh
