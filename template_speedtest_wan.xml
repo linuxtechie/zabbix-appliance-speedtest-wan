@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <zabbix_export>
     <version>5.0</version>
-    <date>2020-11-30T09:44:34Z</date>
+    <date>2020-12-16T09:02:05Z</date>
     <groups>
         <group>
             <name>Templates</name>
@@ -21,75 +21,21 @@
                     <name>ISP SpeedTest</name>
                 </application>
             </applications>
-            <items>
-                <item>
-                    <name>Speedtest Best server - Download</name>
-                    <type>TRAP</type>
-                    <key>speedtest.download</key>
-                    <delay>0</delay>
-                    <value_type>FLOAT</value_type>
-                    <units>Mbit/s</units>
-                    <applications>
-                        <application>
-                            <name>ISP SpeedTest</name>
-                        </application>
-                    </applications>
-                    <triggers>
-                        <trigger>
-                            <expression>{avg(#3)}&lt;6</expression>
-                            <name>{HOST.HOST} Download best server speed &lt; 6Mb/s</name>
-                            <priority>WARNING</priority>
-                        </trigger>
-                    </triggers>
-                </item>
-                <item>
-                    <name>Speedtest Best server - Ping</name>
-                    <type>TRAP</type>
-                    <key>speedtest.ping</key>
-                    <delay>0</delay>
-                    <value_type>FLOAT</value_type>
-                    <units>ms</units>
-                    <applications>
-                        <application>
-                            <name>ISP SpeedTest</name>
-                        </application>
-                    </applications>
-                </item>
-                <item>
-                    <name>Speedtest Best server - Upload</name>
-                    <type>TRAP</type>
-                    <key>speedtest.upload</key>
-                    <delay>0</delay>
-                    <value_type>FLOAT</value_type>
-                    <units>Mbit/s</units>
-                    <applications>
-                        <application>
-                            <name>ISP SpeedTest</name>
-                        </application>
-                    </applications>
-                    <triggers>
-                        <trigger>
-                            <expression>{avg(#3)}&lt;0.20</expression>
-                            <name>{HOST.HOST} Upload best server speed &lt; 0.2Mb/s</name>
-                            <priority>WARNING</priority>
-                        </trigger>
-                    </triggers>
-                </item>
-            </items>
             <discovery_rules>
                 <discovery_rule>
                     <name>Discovery ISP Server</name>
+                    <type>TRAP</type>
                     <key>speedtest.discovery</key>
-                    <delay>500s</delay>
-                    <status>DISABLED</status>
-                    <lifetime>1d</lifetime>
+                    <delay>0</delay>
+                    <lifetime>356d</lifetime>
                     <item_prototypes>
                         <item_prototype>
-                            <name>Speedtest {#SERVERNAME} - Download</name>
+                            <name>{#SERVERNAME} - DL</name>
+                            <type>TRAP</type>
                             <key>speedtest.download.server[{#SERVERID}]</key>
-                            <delay>600s</delay>
+                            <delay>0</delay>
                             <value_type>FLOAT</value_type>
-                            <units>Mbit/s</units>
+                            <units>Bit/s</units>
                             <applications>
                                 <application>
                                     <name>ISP SpeedTest</name>
@@ -97,16 +43,17 @@
                             </applications>
                             <trigger_prototypes>
                                 <trigger_prototype>
-                                    <expression>{avg(#3)}&lt;{#SERVER_TR_DL}</expression>
-                                    <name>{HOST.HOST} Download {#SERVERNAME} speed &lt; {#SERVER_TR_DL}Mb/s</name>
+                                    <expression>{last()}&lt;{$SERVER_TR_DL}</expression>
+                                    <name>{HOST.HOST} {#SERVERNAME} DL &lt; {$SERVER_TR_DL}Mb/s</name>
                                     <priority>WARNING</priority>
                                 </trigger_prototype>
                             </trigger_prototypes>
                         </item_prototype>
                         <item_prototype>
-                            <name>Speedtest {#SERVERNAME} - Ping</name>
-                            <key>speedtest.ping.server[{#SERVERID}]</key>
-                            <delay>600s</delay>
+                            <name>{#SERVERNAME} - Jitter</name>
+                            <type>TRAP</type>
+                            <key>speedtest.jitter.server[{#SERVERID}]</key>
+                            <delay>0</delay>
                             <value_type>FLOAT</value_type>
                             <units>ms</units>
                             <applications>
@@ -116,11 +63,12 @@
                             </applications>
                         </item_prototype>
                         <item_prototype>
-                            <name>Speedtest {#SERVERNAME} - Upload</name>
-                            <key>speedtest.upload.server[{#SERVERID}]</key>
-                            <delay>600s</delay>
+                            <name>{#SERVERNAME} - Loss</name>
+                            <type>TRAP</type>
+                            <key>speedtest.packetloss.server[{#SERVERID}]</key>
+                            <delay>0</delay>
                             <value_type>FLOAT</value_type>
-                            <units>Mbit/s</units>
+                            <units>%</units>
                             <applications>
                                 <application>
                                     <name>ISP SpeedTest</name>
@@ -128,8 +76,66 @@
                             </applications>
                             <trigger_prototypes>
                                 <trigger_prototype>
-                                    <expression>{avg(#3)}&lt;{#SERVER_TR_UL}</expression>
-                                    <name>{HOST.HOST} Upload {#SERVERNAME} speed &lt; {#SERVER_TR_UL}Mb/s</name>
+                                    <expression>{last()}&gt; {$SERVER_TR_PACKETLOSS}</expression>
+                                    <name>{HOST.HOST} {#SERVERNAME} Loss &gt; {$SERVER_TR_PACKETLOSS} %</name>
+                                    <priority>HIGH</priority>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>{#SERVERNAME} - Ping</name>
+                            <type>TRAP</type>
+                            <key>speedtest.ping.server[{#SERVERID}]</key>
+                            <delay>0</delay>
+                            <value_type>FLOAT</value_type>
+                            <units>ms</units>
+                            <applications>
+                                <application>
+                                    <name>ISP SpeedTest</name>
+                                </application>
+                            </applications>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <expression>{last()}&gt;{$SERVER_TR_PING}</expression>
+                                    <name>{HOST.HOST} {#SERVERNAME}  Ping &gt; {$SERVER_TR_PING} ms</name>
+                                    <priority>HIGH</priority>
+                                </trigger_prototype>
+                            </trigger_prototypes>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>{#SERVERNAME} - Result</name>
+                            <type>TRAP</type>
+                            <key>speedtest.result.server[{#SERVERID}]</key>
+                            <delay>0</delay>
+                            <trends>0</trends>
+                            <value_type>TEXT</value_type>
+                            <applications>
+                                <application>
+                                    <name>ISP SpeedTest</name>
+                                </application>
+                            </applications>
+                        </item_prototype>
+                        <item_prototype>
+                            <name>{#SERVERNAME} - UL</name>
+                            <type>TRAP</type>
+                            <key>speedtest.upload.server[{#SERVERID}]</key>
+                            <delay>0</delay>
+                            <value_type>FLOAT</value_type>
+                            <units>Bit/s</units>
+                            <applications>
+                                <application>
+                                    <name>ISP SpeedTest</name>
+                                </application>
+                            </applications>
+                            <trigger_prototypes>
+                                <trigger_prototype>
+                                    <expression>{last()}&lt;{$SERVER_TR_UL}</expression>
+                                    <name>{HOST.HOST} {#SERVERNAME} Jitter &gt; {$SERVER_TR_JITTER} ms</name>
+                                    <priority>HIGH</priority>
+                                </trigger_prototype>
+                                <trigger_prototype>
+                                    <expression>{last()}&lt;{$SERVER_TR_UL}</expression>
+                                    <name>{HOST.HOST} {#SERVERNAME} UL &lt; {$SERVER_TR_UL}Mb/s</name>
                                     <priority>WARNING</priority>
                                 </trigger_prototype>
                             </trigger_prototypes>
@@ -193,39 +199,28 @@
                     </graph_prototypes>
                 </discovery_rule>
             </discovery_rules>
+            <macros>
+                <macro>
+                    <macro>{$SERVER_TR_DL}</macro>
+                    <value>20</value>
+                </macro>
+                <macro>
+                    <macro>{$SERVER_TR_JITTER}</macro>
+                    <value>30</value>
+                </macro>
+                <macro>
+                    <macro>{$SERVER_TR_PACKETLOSS}</macro>
+                    <value>1</value>
+                </macro>
+                <macro>
+                    <macro>{$SERVER_TR_PING}</macro>
+                    <value>150</value>
+                </macro>
+                <macro>
+                    <macro>{$SERVER_TR_UL}</macro>
+                    <value>5</value>
+                </macro>
+            </macros>
         </template>
     </templates>
-    <graphs>
-        <graph>
-            <name>Speedtest Best server</name>
-            <ymin_type_1>FIXED</ymin_type_1>
-            <graph_items>
-                <graph_item>
-                    <drawtype>GRADIENT_LINE</drawtype>
-                    <color>1A7C11</color>
-                    <item>
-                        <host>Template App Speedtest WAN</host>
-                        <key>speedtest.download</key>
-                    </item>
-                </graph_item>
-                <graph_item>
-                    <sortorder>1</sortorder>
-                    <drawtype>GRADIENT_LINE</drawtype>
-                    <color>2774A4</color>
-                    <item>
-                        <host>Template App Speedtest WAN</host>
-                        <key>speedtest.upload</key>
-                    </item>
-                </graph_item>
-                <graph_item>
-                    <sortorder>2</sortorder>
-                    <color>F63100</color>
-                    <item>
-                        <host>Template App Speedtest WAN</host>
-                        <key>speedtest.ping</key>
-                    </item>
-                </graph_item>
-            </graph_items>
-        </graph>
-    </graphs>
 </zabbix_export>
